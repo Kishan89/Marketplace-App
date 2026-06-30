@@ -2,6 +2,12 @@
 
 A React Native e-commerce application built with Expo SDK 56, Redux Toolkit, and RTK Query. Features a clean feature-based architecture with full support for Light and Dark themes.
 
+| | |
+|---|---|
+| 📂 GitHub | https://github.com/Kishan89/Marketplace-App |
+| 📦 APK | [Download (Google Drive)](https://drive.google.com/file/d/1UDgyofpIESEFHjTTCMUURIKNgc8XEDs9/view?usp=drive_link) |
+| 🎥 Demo Video | [Watch (Google Drive)](https://drive.google.com/file/d/1wmCiRpn0CO9CiiP-xwvEHetxuD4IwUmG/view?usp=sharing) |
+
 ---
 
 ## 📱 Screenshots
