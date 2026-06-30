@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Colors } from '../../core/theme/colors';
-import { Typography } from '../../core/theme/typography';
-import { Spacing } from '../../core/theme/spacing';
+import { useTheme } from '../../core/theme/ThemeContext';
+import { typography } from '../../core/theme/typography';
+import { spacing } from '../../core/theme/spacing';
 import { Button } from './Button';
 
 interface ErrorViewProps {
@@ -13,45 +13,51 @@ interface ErrorViewProps {
 export const ErrorView: React.FC<ErrorViewProps> = ({
   message = 'Something went wrong. Please try again.',
   onRetry,
-}) => (
-  <View style={styles.container} accessibilityRole="alert">
-    <Text style={styles.icon}>⚠️</Text>
-    <Text style={styles.title}>Oops!</Text>
-    <Text style={styles.message}>{message}</Text>
-    {onRetry ? (
-      <Button
-        label="Try Again"
-        onPress={onRetry}
-        variant="outline"
-        style={styles.button}
-      />
-    ) : null}
-  </View>
-);
+}) => {
+  const { colors } = useTheme();
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]} accessibilityRole="alert">
+      <Text style={styles.icon}>⚠️</Text>
+      <Text style={[styles.title, { color: colors.textPrimary, fontFamily: typography.fontFamily.bold }]}>
+        Oops!
+      </Text>
+      <Text style={[styles.message, { color: colors.textSecondary, fontFamily: typography.fontFamily.regular }]}>
+        {message}
+      </Text>
+      {onRetry ? (
+        <Button
+          label="Try Again"
+          onPress={onRetry}
+          variant="outline"
+          style={styles.button}
+        />
+      ) : null}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: Spacing.xl,
+    paddingHorizontal: spacing.xl,
   },
   icon: {
-    fontSize: 56,
-    marginBottom: Spacing.md,
+    fontSize: 48,
+    marginBottom: spacing.md,
   },
   title: {
-    ...Typography.h3,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.sm,
+    fontSize: typography.h3.fontSize,
+    marginBottom: spacing.xs,
   },
   message: {
-    ...Typography.body1,
-    color: Colors.textSecondary,
+    fontSize: typography.body.fontSize,
     textAlign: 'center',
-    marginBottom: Spacing.lg,
+    marginBottom: spacing.xl,
+    maxWidth: 260,
   },
   button: {
-    paddingHorizontal: Spacing.xl,
+    paddingHorizontal: spacing.xl,
   },
 });

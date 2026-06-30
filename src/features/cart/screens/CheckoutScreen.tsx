@@ -13,10 +13,11 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Colors } from '../../../core/theme/colors';
-import { Typography } from '../../../core/theme/typography';
-import { Spacing } from '../../../core/theme/spacing';
+import { useTheme } from '../../../core/theme/ThemeContext';
+import { typography } from '../../../core/theme/typography';
+import { spacing, radius } from '../../../core/theme/spacing';
 import { Button } from '../../../shared/components/Button';
+import { Feather } from '@expo/vector-icons';
 import { Input } from '../../../shared/components/Input';
 import { useAppSelector } from '../../../shared/hooks/useAppSelector';
 import { useAppDispatch } from '../../../shared/hooks/useAppDispatch';
@@ -28,16 +29,17 @@ import { CartStackParamList } from '../../../app/navigation/MainTabNavigator';
 type Props = NativeStackScreenProps<CartStackParamList, 'Checkout'>;
 
 const addressSchema = z.object({
-  fullName: z.string().min(2, 'Name is required'),
-  address: z.string().min(5, 'Address is required'),
-  city: z.string().min(2, 'City is required'),
-  pincode: z.string().regex(/^\d{4,10}$/, 'Enter a valid pincode'),
+  fullName: z.string().trim().min(2, 'Please enter your full name (min 2 characters)'),
+  address: z.string().trim().min(10, 'Please enter a detailed delivery address (min 10 characters)'),
+  city: z.string().trim().min(2, 'Please enter your city name'),
+  pincode: z.string().trim().regex(/^\d{6}$/, 'Please enter a valid 6-digit pincode'),
 });
 
 type AddressForm = z.infer<typeof addressSchema>;
 type PaymentMethod = 'cod' | 'card';
 
 export const CheckoutScreen: React.FC<Props> = ({ navigation }) => {
+  const { colors } = useTheme();
   const dispatch = useAppDispatch();
   const items = useAppSelector(selectCartItems);
   const total = useAppSelector(selectCartTotal);
@@ -49,11 +51,18 @@ export const CheckoutScreen: React.FC<Props> = ({ navigation }) => {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<AddressForm>({ resolver: zodResolver(addressSchema) });
+  } = useForm<AddressForm>({
+    resolver: zodResolver(addressSchema),
+    defaultValues: {
+      fullName: '',
+      address: '',
+      city: '',
+      pincode: '',
+    },
+  });
 
   const onPlaceOrder = async () => {
     setIsPlacing(true);
-    // Fake processing delay
     await new Promise(resolve => setTimeout(resolve, 1500));
     const orderId = `ORD-${Date.now()}`;
     dispatch(clearCart());
@@ -65,50 +74,66 @@ export const CheckoutScreen: React.FC<Props> = ({ navigation }) => {
   const grandTotal = total + deliveryFee;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()} accessibilityLabel="Go back">
-              <Text style={styles.backIcon}>←</Text>
+              <Feather name="chevron-left" size={24} color={colors.textPrimary} />
             </TouchableOpacity>
-            <Text style={styles.heading}>Checkout</Text>
+            <Text style={[styles.heading, { color: colors.textPrimary, fontFamily: typography.fontFamily.bold }]}>
+              Checkout
+            </Text>
           </View>
 
           {/* Order summary */}
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Order Summary</Text>
-            {items.map(item => (
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary, fontFamily: typography.fontFamily.bold }]}>
+              Order Summary
+            </Text>
+            {items.map((item: import('../types').CartItem) => (
               <View key={item.product.id} style={styles.summaryRow}>
-                <Text style={styles.summaryItem} numberOfLines={1}>
+                <Text style={[styles.summaryItem, { color: colors.textSecondary, fontFamily: typography.fontFamily.regular }]} numberOfLines={1}>
                   {item.product.title} ×{item.quantity}
                 </Text>
-                <Text style={styles.summaryPrice}>
+                <Text style={[styles.summaryPrice, { color: colors.textPrimary, fontFamily: typography.fontFamily.semibold }]}>
                   {formatCurrency((item.product.price * (1 - item.product.discountPercentage / 100)) * item.quantity)}
                 </Text>
               </View>
             ))}
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryItem}>Items ({count})</Text>
-              <Text style={styles.summaryPrice}>{formatCurrency(total)}</Text>
+              <Text style={[styles.summaryItem, { color: colors.textSecondary, fontFamily: typography.fontFamily.regular }]}>
+                Items ({count})
+              </Text>
+              <Text style={[styles.summaryPrice, { color: colors.textPrimary, fontFamily: typography.fontFamily.semibold }]}>
+                {formatCurrency(total)}
+              </Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryItem}>Delivery</Text>
-              <Text style={[styles.summaryPrice, deliveryFee === 0 && styles.free]}>
+              <Text style={[styles.summaryItem, { color: colors.textSecondary, fontFamily: typography.fontFamily.regular }]}>
+                Delivery
+              </Text>
+              <Text style={[styles.summaryPrice, { fontFamily: typography.fontFamily.semibold }, deliveryFee === 0 ? { color: colors.success } : { color: colors.textPrimary }]}>
                 {deliveryFee === 0 ? 'FREE' : formatCurrency(deliveryFee)}
               </Text>
             </View>
             <View style={[styles.summaryRow, styles.totalRow]}>
-              <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue}>{formatCurrency(grandTotal)}</Text>
+              <Text style={[styles.totalLabel, { color: colors.textPrimary, fontFamily: typography.fontFamily.bold }]}>
+                Total
+              </Text>
+              <Text style={[styles.totalValue, { color: colors.primary, fontFamily: typography.fontFamily.bold }]}>
+                {formatCurrency(grandTotal)}
+              </Text>
             </View>
           </View>
 
           {/* Address */}
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Delivery Address</Text>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary, fontFamily: typography.fontFamily.bold }]}>
+              Delivery Address
+            </Text>
             <Controller
               control={control}
               name="fullName"
@@ -146,23 +171,46 @@ export const CheckoutScreen: React.FC<Props> = ({ navigation }) => {
           </View>
 
           {/* Payment */}
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Payment Method</Text>
-            {(['cod', 'card'] as PaymentMethod[]).map(method => (
-              <TouchableOpacity
-                key={method}
-                style={[styles.payOption, payment === method && styles.payOptionActive]}
-                onPress={() => setPayment(method)}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: payment === method }}
-              >
-                <Text style={styles.payIcon}>{method === 'cod' ? '💵' : '💳'}</Text>
-                <Text style={[styles.payLabel, payment === method && styles.payLabelActive]}>
-                  {method === 'cod' ? 'Cash on Delivery' : 'Credit / Debit Card'}
-                </Text>
-                <View style={[styles.radio, payment === method && styles.radioActive]} />
-              </TouchableOpacity>
-            ))}
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Text style={[styles.sectionTitle, { color: colors.textPrimary, fontFamily: typography.fontFamily.bold }]}>
+              Payment Method
+            </Text>
+            {(['cod', 'card'] as PaymentMethod[]).map(method => {
+              const isActive = payment === method;
+              return (
+                <TouchableOpacity
+                  key={method}
+                  style={[
+                    styles.payOption,
+                    {
+                      borderColor: isActive ? colors.primary : colors.border,
+                      backgroundColor: isActive ? colors.primaryLight : 'transparent',
+                    },
+                  ]}
+                  onPress={() => setPayment(method)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: isActive }}
+                >
+                  <Text style={styles.payIcon}>{method === 'cod' ? '💵' : '💳'}</Text>
+                  <Text style={[
+                    styles.payLabel,
+                    {
+                      color: isActive ? colors.primary : colors.textSecondary,
+                      fontFamily: isActive ? typography.fontFamily.semibold : typography.fontFamily.regular,
+                    },
+                  ]}>
+                    {method === 'cod' ? 'Cash on Delivery' : 'Credit / Debit Card'}
+                  </Text>
+                  <View style={[
+                    styles.radio,
+                    {
+                      borderColor: isActive ? colors.primary : colors.border,
+                      backgroundColor: isActive ? colors.primary : 'transparent',
+                    },
+                  ]} />
+                </TouchableOpacity>
+              );
+            })}
           </View>
 
           <Button
@@ -179,51 +227,42 @@ export const CheckoutScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1 },
   flex: { flex: 1 },
-  scroll: { padding: Spacing.base, paddingBottom: Spacing.xxl },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.lg, gap: Spacing.md },
-  backIcon: { fontSize: 22, color: Colors.textPrimary },
-  heading: { ...Typography.h2, color: Colors.textPrimary },
+  scroll: { padding: spacing.lg, paddingBottom: spacing.xxl },
+  header: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg, gap: spacing.md },
+  backIcon: { fontSize: 22 },
+  heading: { fontSize: typography.h2.fontSize },
   card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: Spacing.base,
-    marginBottom: Spacing.base,
-    shadowColor: Colors.black,
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
   },
-  sectionTitle: { ...Typography.h4, color: Colors.textPrimary, marginBottom: Spacing.md },
-  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: Spacing.sm },
-  summaryItem: { ...Typography.body2, color: Colors.textSecondary, flex: 1, marginRight: Spacing.sm },
-  summaryPrice: { ...Typography.body2, color: Colors.textPrimary, fontWeight: '600' },
-  free: { color: Colors.success },
-  divider: { height: 1, backgroundColor: Colors.border, marginVertical: Spacing.sm },
-  totalRow: { marginTop: Spacing.xs },
-  totalLabel: { ...Typography.h4, color: Colors.textPrimary },
-  totalValue: { ...Typography.h3, color: Colors.primary },
-  row: { flexDirection: 'row', gap: Spacing.sm },
+  sectionTitle: { fontSize: typography.h3.fontSize, marginBottom: spacing.md },
+  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm },
+  summaryItem: { fontSize: typography.body.fontSize, flex: 1, marginRight: spacing.sm },
+  summaryPrice: { fontSize: typography.body.fontSize },
+  divider: { height: 1, marginVertical: spacing.sm },
+  totalRow: { marginTop: spacing.xs },
+  totalLabel: { fontSize: typography.h3.fontSize },
+  totalValue: { fontSize: typography.h2.fontSize },
+  row: { flexDirection: 'row', gap: spacing.sm },
   half: { flex: 1 },
   payOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: Spacing.md,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    marginBottom: Spacing.sm,
-    gap: Spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    marginBottom: spacing.sm,
+    gap: spacing.sm,
   },
-  payOptionActive: { borderColor: Colors.primary, backgroundColor: '#F0EEFF' },
   payIcon: { fontSize: 20 },
-  payLabel: { ...Typography.body1, color: Colors.textSecondary, flex: 1 },
-  payLabelActive: { color: Colors.primary, fontWeight: '600' },
+  payLabel: { fontSize: typography.bodyLarge.fontSize, flex: 1 },
   radio: {
     width: 20, height: 20, borderRadius: 10,
-    borderWidth: 2, borderColor: Colors.border,
+    borderWidth: 2,
   },
-  radioActive: { borderColor: Colors.primary, backgroundColor: Colors.primary },
-  placeBtn: { marginTop: Spacing.sm },
+  placeBtn: { marginTop: spacing.sm },
 });

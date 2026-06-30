@@ -1,10 +1,10 @@
 /**
  * Format a number as a currency string.
- * @example formatCurrency(1999.9) → "$1,999.90"
+ * @example formatCurrency(1999.9) → "₹1,999.90"
  */
-export const formatCurrency = (amount: number, currency = 'USD'): string => {
-  if (!isFinite(amount)) return '$0.00';
-  return new Intl.NumberFormat('en-US', {
+export const formatCurrency = (amount: number, currency = 'INR'): string => {
+  if (!isFinite(amount)) return '₹0.00';
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency,
     minimumFractionDigits: 2,

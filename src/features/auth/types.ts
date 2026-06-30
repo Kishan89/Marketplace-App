@@ -11,6 +11,7 @@ export interface AuthState {
   token: string | null;
   user: User | null;
   isLoading: boolean;
+  isRestoring: boolean;
   error: string | null;
 }
 

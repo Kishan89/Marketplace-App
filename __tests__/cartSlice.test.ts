@@ -4,9 +4,9 @@ import cartReducer, {
   updateQuantity,
   clearCart,
   hydrateCart,
-} from '../../src/features/cart/slice/cartSlice';
-import { CartState } from '../../src/features/cart/types';
-import { Product } from '../../src/features/products/types';
+} from '../src/features/cart/slice/cartSlice';
+import { CartState } from '../src/features/cart/types';
+import { Product } from '../src/features/products/types';
 
 const mockProduct: Product = {
   id: 1,

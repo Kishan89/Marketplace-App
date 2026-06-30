@@ -2,6 +2,7 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "types": ["jest"],
     "baseUrl": ".",
     "paths": {
       "@features/*": ["src/features/*"],
@@ -10,5 +11,6 @@
       "@store/*": ["src/store/*"],
       "@assets/*": ["assets/*"]
     }
-  }
+  },
+  "include": ["src", "__tests__", "App.tsx", "index.ts"]
 }

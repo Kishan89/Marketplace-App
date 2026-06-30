@@ -12,15 +12,16 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAppDispatch } from '../../../shared/hooks/useAppDispatch';
 import { useAppSelector } from '../../../shared/hooks/useAppSelector';
 import { loginThunk, clearError } from '../slice/authSlice';
 import { Button } from '../../../shared/components/Button';
 import { Input } from '../../../shared/components/Input';
-import { Colors } from '../../../core/theme/colors';
-import { Typography } from '../../../core/theme/typography';
-import { Spacing } from '../../../core/theme/spacing';
+import { useTheme } from '../../../core/theme/ThemeContext';
+import { typography } from '../../../core/theme/typography';
+import { spacing, radius } from '../../../core/theme/spacing';
 import { LoginFormValues } from '../types';
 
 const loginSchema = z.object({
@@ -30,6 +31,7 @@ const loginSchema = z.object({
 
 export const LoginScreen: React.FC = () => {
   const dispatch = useAppDispatch();
+  const { colors, isDark } = useTheme();
   const { isLoading, error } = useAppSelector(state => state.auth);
 
   const {
@@ -46,9 +48,19 @@ export const LoginScreen: React.FC = () => {
     dispatch(loginThunk(values));
   };
 
+  // Premium dark-mode gradient (deep slate) vs light-mode gradient (deep corporate blue)
+  const gradientColors = isDark 
+    ? (['#0B0F19', '#111827', '#1F2937'] as const)
+    : (['#002254', '#003684', '#1A56B0'] as const);
+
   return (
     <SafeAreaView style={styles.safe}>
-      <LinearGradient colors={[Colors.primaryDark, Colors.primary, Colors.primaryLight]} style={styles.gradient}>
+      <LinearGradient
+        colors={gradientColors}
+        style={styles.gradient}
+        start={{ x: 0.1, y: 0.1 }}
+        end={{ x: 0.9, y: 0.9 }}
+      >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.flex}
@@ -60,19 +72,35 @@ export const LoginScreen: React.FC = () => {
           >
             {/* Header */}
             <View style={styles.header}>
-              <Text style={styles.logo}>🛍️</Text>
-              <Text style={styles.title}>Mini Marketplace</Text>
-              <Text style={styles.subtitle}>Discover amazing products</Text>
+              <View style={[styles.logoWrap, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
+                <Image
+                  source={{ uri: 'https://img.icons8.com/3d-fluency/96/shopping-bag.png' }}
+                  style={styles.logoImage}
+                />
+              </View>
+              <Text style={[styles.title, { color: '#FFFFFF', fontFamily: typography.fontFamily.bold }]}>
+                Marketplace
+              </Text>
+              <Text style={[styles.subtitle, { color: 'rgba(255, 255, 255, 0.8)', fontFamily: typography.fontFamily.medium }]}>
+                Discover premium products near you
+              </Text>
             </View>
 
-            {/* Card */}
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Welcome back</Text>
-              <Text style={styles.cardSubtitle}>Sign in to continue shopping</Text>
+            {/* Clean Enterprise Login Card */}
+            <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Text style={[styles.cardTitle, { color: colors.textPrimary, fontFamily: typography.fontFamily.bold }]}>
+                Sign In
+              </Text>
+              <Text style={[styles.cardSubtitle, { color: colors.textSecondary, fontFamily: typography.fontFamily.regular }]}>
+                Enter your credentials to access your account
+              </Text>
 
               {error ? (
-                <View style={styles.errorBanner} accessibilityRole="alert">
-                  <Text style={styles.errorText}>{error}</Text>
+                <View style={[styles.errorBanner, { 
+                  backgroundColor: isDark ? '#2D1618' : '#FDF2F2',
+                  borderLeftColor: colors.error 
+                }]} accessibilityRole="alert">
+                  <Text style={[styles.errorText, { color: colors.error, fontFamily: typography.fontFamily.medium }]}>{error}</Text>
                 </View>
               ) : null}
 
@@ -81,8 +109,8 @@ export const LoginScreen: React.FC = () => {
                 name="email"
                 render={({ field: { onChange, onBlur, value } }) => (
                   <Input
-                    label="Email"
-                    placeholder="you@example.com"
+                    label="Email Address"
+                    placeholder="name@company.com"
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoCorrect={false}
@@ -110,8 +138,10 @@ export const LoginScreen: React.FC = () => {
                 )}
               />
 
-              <TouchableOpacity style={styles.forgotRow}>
-                <Text style={styles.forgotText}>Forgot password?</Text>
+              <TouchableOpacity style={styles.forgotRow} activeOpacity={0.7}>
+                <Text style={[styles.forgotText, { color: colors.primary, fontFamily: typography.fontFamily.semibold }]}>
+                  Forgot password?
+                </Text>
               </TouchableOpacity>
 
               <Button
@@ -122,7 +152,7 @@ export const LoginScreen: React.FC = () => {
                 style={styles.loginBtn}
               />
 
-              <Text style={styles.hint}>
+              <Text style={[styles.hint, { color: colors.textTertiary, fontFamily: typography.fontFamily.regular }]}>
                 Hint: Any email + password (6+ chars) works 🎉
               </Text>
             </View>
@@ -140,72 +170,74 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: Spacing.base,
+    padding: spacing.lg,
   },
   header: {
     alignItems: 'center',
-    marginBottom: Spacing.xl,
+    marginBottom: spacing.xl,
   },
-  logo: { fontSize: 64, marginBottom: Spacing.sm },
+  logoWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
+  logoImage: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.sm,
+  },
   title: {
-    ...Typography.h2,
-    color: Colors.white,
+    fontSize: typography.h2.fontSize,
     textAlign: 'center',
   },
   subtitle: {
-    ...Typography.body1,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: Spacing.xs,
+    fontSize: typography.body.fontSize,
+    marginTop: spacing.xs,
+    textAlign: 'center',
   },
   card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 24,
-    padding: Spacing.lg,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 24,
-    elevation: 10,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    padding: spacing.xl,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
   },
   cardTitle: {
-    ...Typography.h3,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.xs,
+    fontSize: typography.h2.fontSize,
+    marginBottom: 4,
   },
   cardSubtitle: {
-    ...Typography.body2,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.lg,
+    fontSize: typography.body.fontSize,
+    marginBottom: spacing.xl,
   },
   errorBanner: {
-    backgroundColor: '#FFF0F0',
     borderLeftWidth: 4,
-    borderLeftColor: Colors.error,
-    padding: Spacing.md,
-    borderRadius: 8,
-    marginBottom: Spacing.base,
+    padding: spacing.md,
+    borderRadius: radius.sm,
+    marginBottom: spacing.lg,
   },
   errorText: {
-    ...Typography.body2,
-    color: Colors.error,
+    fontSize: typography.body.fontSize,
   },
   forgotRow: {
     alignSelf: 'flex-end',
-    marginBottom: Spacing.base,
-    marginTop: -Spacing.xs,
+    marginBottom: spacing.lg,
+    marginTop: -spacing.xs,
   },
   forgotText: {
-    ...Typography.body2,
-    color: Colors.primary,
-    fontWeight: '600',
+    fontSize: typography.label.fontSize,
   },
   loginBtn: {
-    marginTop: Spacing.xs,
+    marginTop: spacing.xs,
   },
   hint: {
-    ...Typography.caption,
-    color: Colors.textDisabled,
+    fontSize: typography.caption.fontSize,
     textAlign: 'center',
-    marginTop: Spacing.base,
+    marginTop: spacing.lg,
   },
 });

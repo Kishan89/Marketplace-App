@@ -10,10 +10,11 @@ import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Toast from 'react-native-toast-message';
+import { Feather, FontAwesome } from '@expo/vector-icons';
 import { useGetProductByIdQuery } from '../api/productsApi';
-import { Colors } from '../../../core/theme/colors';
-import { Typography } from '../../../core/theme/typography';
-import { Spacing } from '../../../core/theme/spacing';
+import { useTheme } from '../../../core/theme/ThemeContext';
+import { typography } from '../../../core/theme/typography';
+import { spacing, radius } from '../../../core/theme/spacing';
 import { Button } from '../../../shared/components/Button';
 import { SkeletonLoader } from '../../../shared/components/SkeletonLoader';
 import { ErrorView } from '../../../shared/components/ErrorView';
@@ -28,6 +29,7 @@ type Props = NativeStackScreenProps<HomeStackParamList, 'ProductDetails'>;
 
 export const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const { productId } = route.params;
+  const { colors, isDark } = useTheme();
   const dispatch = useAppDispatch();
   const [quantity, setQuantity] = useState(1);
 
@@ -48,22 +50,22 @@ export const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.backBtn}>
+      <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
+        <View style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} accessibilityLabel="Go back">
-            <Text style={styles.backIcon}>←</Text>
+            <Feather name="chevron-left" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
         </View>
         <ScrollView contentContainerStyle={styles.skeletonScroll}>
           <SkeletonLoader height={300} borderRadius={0} />
           <View style={styles.skeletonContent}>
-            <SkeletonLoader height={14} width="50%" />
-            <SkeletonLoader height={22} style={{ marginTop: 8 }} />
-            <SkeletonLoader height={22} width="70%" style={{ marginTop: 4 }} />
-            <SkeletonLoader height={30} width="40%" style={{ marginTop: 16 }} />
-            <SkeletonLoader height={14} style={{ marginTop: 16 }} />
-            <SkeletonLoader height={14} style={{ marginTop: 6 }} />
-            <SkeletonLoader height={14} width="80%" style={{ marginTop: 6 }} />
+            <SkeletonLoader height={14} width="30%" />
+            <SkeletonLoader height={22} style={{ marginTop: 12 }} />
+            <SkeletonLoader height={22} width="70%" style={{ marginTop: 6 }} />
+            <SkeletonLoader height={30} width="40%" style={{ marginTop: 24 }} />
+            <SkeletonLoader height={14} style={{ marginTop: 24 }} />
+            <SkeletonLoader height={14} style={{ marginTop: 8 }} />
+            <SkeletonLoader height={14} width="80%" style={{ marginTop: 8 }} />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -72,7 +74,7 @@ export const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
 
   if (isError || !product) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
         <ErrorView message="Could not load product details." onRetry={refetch} />
       </SafeAreaView>
     );
@@ -82,26 +84,26 @@ export const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
   const hasDiscount = product.discountPercentage > 0;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} bounces>
-        {/* Image */}
+        {/* Image Container with Floating Actions */}
         <View style={styles.imageContainer}>
           <Image
             source={{ uri: product.thumbnail }}
-            style={styles.image}
+            style={[styles.image, { backgroundColor: colors.skeletonBase }]}
             contentFit="cover"
             transition={300}
           />
           <TouchableOpacity
-            style={styles.backBtn}
+            style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
             onPress={() => navigation.goBack()}
             accessibilityLabel="Go back"
             accessibilityRole="button"
           >
-            <Text style={styles.backIcon}>←</Text>
+            <Feather name="chevron-left" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
           {hasDiscount ? (
-            <View style={styles.discountBadge}>
+            <View style={[styles.discountBadge, { backgroundColor: colors.discount }]}>
               <Text style={styles.discountText}>-{Math.round(product.discountPercentage)}%</Text>
             </View>
           ) : null}
@@ -110,65 +112,100 @@ export const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
         <View style={styles.content}>
           {/* Category + Rating */}
           <View style={styles.metaRow}>
-            <Text style={styles.category}>{product.category}</Text>
-            <View style={styles.ratingPill}>
-              <Text style={styles.star}>⭐</Text>
-              <Text style={styles.rating}>{product.rating.toFixed(1)}</Text>
+            <Text style={[styles.category, { color: colors.textTertiary, fontFamily: typography.fontFamily.medium }]}>
+              {product.category}
+            </Text>
+            <View style={[styles.ratingPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <FontAwesome name="star" size={13} color="#F59E0B" />
+              <Text style={[styles.rating, { color: colors.textSecondary, fontFamily: typography.fontFamily.semibold }]}>
+                {product.rating.toFixed(1)}
+              </Text>
             </View>
           </View>
 
-          <Text style={styles.title}>{product.title}</Text>
-          {product.brand ? <Text style={styles.brand}>by {product.brand}</Text> : null}
+          <Text style={[styles.title, { color: colors.textPrimary, fontFamily: typography.fontFamily.bold }]}>
+            {product.title}
+          </Text>
+          {product.brand ? (
+            <Text style={[styles.brand, { color: colors.textSecondary, fontFamily: typography.fontFamily.medium }]}>
+              by {product.brand}
+            </Text>
+          ) : null}
 
-          {/* Price */}
+          {/* Price Layout */}
           <View style={styles.priceRow}>
-            <Text style={styles.price}>{formatCurrency(discountedPrice)}</Text>
+            <Text style={[styles.price, { color: colors.primary, fontFamily: typography.fontFamily.bold }]}>
+              {formatCurrency(discountedPrice)}
+            </Text>
             {hasDiscount ? (
-              <Text style={styles.originalPrice}>{formatCurrency(product.price)}</Text>
+              <Text style={[styles.originalPrice, { color: colors.textTertiary, fontFamily: typography.fontFamily.regular }]}>
+                {formatCurrency(product.price)}
+              </Text>
             ) : null}
           </View>
 
-          {/* Stock */}
-          <Text style={styles.stock}>
-            {product.stock > 10
-              ? '✅ In Stock'
-              : product.stock > 0
-              ? `⚠️ Only ${product.stock} left`
-              : '❌ Out of Stock'}
-          </Text>
+          {/* Stock Status Card */}
+          <View style={[styles.stockCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Feather 
+              name={product.stock > 10 ? 'check-circle' : product.stock > 0 ? 'alert-triangle' : 'x-circle'} 
+              size={16} 
+              color={product.stock > 10 ? '#10B981' : product.stock > 0 ? '#F59E0B' : colors.error} 
+            />
+            <Text style={[styles.stockText, { 
+              color: product.stock > 10 ? '#10B981' : product.stock > 0 ? '#F59E0B' : colors.error, 
+              fontFamily: typography.fontFamily.medium,
+              marginLeft: spacing.xs
+            }]}>
+              {product.stock > 10
+                ? 'In Stock'
+                : product.stock > 0
+                ? `Only ${product.stock} left in stock`
+                : 'Out of Stock'}
+            </Text>
+          </View>
 
           {/* Description */}
-          <Text style={styles.sectionTitle}>About this product</Text>
-          <Text style={styles.description}>{product.description}</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary, fontFamily: typography.fontFamily.bold }]}>
+            About this product
+          </Text>
+          <Text style={[styles.description, { color: colors.textSecondary, fontFamily: typography.fontFamily.regular }]}>
+            {product.description}
+          </Text>
 
-          {/* Quantity stepper */}
-          <Text style={styles.sectionTitle}>Quantity</Text>
+          {/* Quantity selector */}
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary, fontFamily: typography.fontFamily.bold }]}>
+            Quantity
+          </Text>
           <View style={styles.stepper}>
             <TouchableOpacity
-              style={styles.stepBtn}
+              style={[styles.stepBtn, { backgroundColor: colors.primaryLight }]}
               onPress={() => setQuantity(q => Math.max(1, q - 1))}
               accessibilityLabel="Decrease quantity"
               accessibilityRole="button"
             >
-              <Text style={styles.stepBtnText}>−</Text>
+              <Feather name="minus" size={16} color={colors.primary} />
             </TouchableOpacity>
-            <Text style={styles.qty}>{quantity}</Text>
+            <Text style={[styles.qty, { color: colors.textPrimary, fontFamily: typography.fontFamily.bold }]}>
+              {quantity}
+            </Text>
             <TouchableOpacity
-              style={styles.stepBtn}
+              style={[styles.stepBtn, { backgroundColor: colors.primaryLight }]}
               onPress={() => setQuantity(q => Math.min(product.stock, q + 1))}
               accessibilityLabel="Increase quantity"
               accessibilityRole="button"
             >
-              <Text style={styles.stepBtnText}>+</Text>
+              <Feather name="plus" size={16} color={colors.primary} />
             </TouchableOpacity>
           </View>
 
           {inCartQty > 0 ? (
-            <Text style={styles.inCartHint}>Already {inCartQty} in cart</Text>
+            <Text style={[styles.inCartHint, { color: colors.primary, fontFamily: typography.fontFamily.medium }]}>
+              Already {inCartQty} in cart
+            </Text>
           ) : null}
 
           <Button
-            label={`Add to Cart · ${formatCurrency(discountedPrice * quantity)}`}
+            label={product.stock === 0 ? 'Out of Stock' : `Add to Cart · ${formatCurrency(discountedPrice * quantity)}`}
             onPress={handleAddToCart}
             fullWidth
             disabled={product.stock === 0}
@@ -181,71 +218,74 @@ export const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => 
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1 },
   imageContainer: { position: 'relative' },
-  image: { width: '100%', height: 320, backgroundColor: Colors.skeletonBase },
+  image: { width: '100%', height: 320 },
   backBtn: {
     position: 'absolute',
-    top: Spacing.base,
-    left: Spacing.base,
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    borderRadius: 20,
+    top: spacing.md,
+    left: spacing.lg,
+    borderRadius: radius.full,
     width: 40,
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
-    shadowColor: Colors.black,
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    borderWidth: 1,
   },
-  backIcon: { fontSize: 20, color: Colors.textPrimary },
   discountBadge: {
     position: 'absolute',
-    top: Spacing.base,
-    right: Spacing.base,
-    backgroundColor: Colors.error,
-    borderRadius: 8,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
+    top: spacing.md,
+    right: spacing.lg,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
   },
-  discountText: { ...Typography.body2, color: Colors.white, fontWeight: '700' },
-  content: { padding: Spacing.base, paddingBottom: Spacing.xxl },
-  metaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: Spacing.sm },
-  category: { ...Typography.caption, color: Colors.textDisabled, textTransform: 'capitalize' },
+  discountText: { fontSize: typography.caption.fontSize, color: '#FFFFFF', fontWeight: '700' },
+  content: { padding: spacing.lg, paddingBottom: spacing.xxl },
+  metaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.sm },
+  category: { fontSize: typography.caption.fontSize, textTransform: 'capitalize' },
   ratingPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.skeletonBase,
-    borderRadius: 12,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 3,
+    borderWidth: 1,
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
     gap: 4,
   },
-  star: { fontSize: 12 },
-  rating: { ...Typography.caption, color: Colors.textSecondary, fontWeight: '600' },
-  title: { ...Typography.h3, color: Colors.textPrimary, marginBottom: Spacing.xs },
-  brand: { ...Typography.body2, color: Colors.textSecondary, marginBottom: Spacing.sm },
-  priceRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginBottom: Spacing.sm },
-  price: { ...Typography.h3, color: Colors.primary },
-  originalPrice: { ...Typography.body1, color: Colors.textDisabled, textDecorationLine: 'line-through' },
-  stock: { ...Typography.body2, marginBottom: Spacing.base },
-  sectionTitle: { ...Typography.h4, color: Colors.textPrimary, marginBottom: Spacing.sm, marginTop: Spacing.base },
-  description: { ...Typography.body1, color: Colors.textSecondary, lineHeight: 22 },
-  stepper: { flexDirection: 'row', alignItems: 'center', gap: Spacing.base, marginBottom: Spacing.sm },
+  rating: { fontSize: typography.caption.fontSize, marginLeft: 2 },
+  title: { fontSize: typography.h2.fontSize, marginBottom: spacing.xs },
+  brand: { fontSize: typography.body.fontSize, marginBottom: spacing.md },
+  priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm, marginBottom: spacing.md },
+  price: { fontSize: typography.price.fontSize },
+  originalPrice: { fontSize: typography.body.fontSize, textDecorationLine: 'line-through' },
+  stockCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  stockText: { fontSize: typography.body.fontSize },
+  sectionTitle: {
+    fontSize: typography.h3.fontSize,
+    marginBottom: spacing.sm,
+    marginTop: spacing.lg,
+  },
+  description: { fontSize: typography.bodyLarge.fontSize, lineHeight: 24 },
+  stepper: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg, marginBottom: spacing.md },
   stepBtn: {
     width: 40,
     height: 40,
-    borderRadius: 12,
-    backgroundColor: Colors.primary,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepBtnText: { fontSize: 20, color: Colors.white, fontWeight: '600', lineHeight: 24 },
-  qty: { ...Typography.h3, color: Colors.textPrimary, minWidth: 40, textAlign: 'center' },
-  inCartHint: { ...Typography.caption, color: Colors.accent, marginBottom: Spacing.sm },
-  addBtn: { marginTop: Spacing.sm },
-  skeletonScroll: { paddingBottom: Spacing.xxl },
-  skeletonContent: { padding: Spacing.base },
+  qty: { fontSize: typography.h3.fontSize, minWidth: 40, textAlign: 'center' },
+  inCartHint: { fontSize: typography.caption.fontSize, marginBottom: spacing.md },
+  addBtn: { marginTop: spacing.md },
+  skeletonScroll: { paddingBottom: spacing.xxl },
+  skeletonContent: { padding: spacing.lg },
 });

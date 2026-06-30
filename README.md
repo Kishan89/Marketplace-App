@@ -1,165 +1,160 @@
-# Mini Marketplace App 🛍️
+# Marketplace App
 
-A production-grade React Native mobile app built as a technical assignment. Features a full product browsing experience with cart management, checkout flow, and dummy authentication.
-
----
-
-## 📱 Features
-
-- **Authentication** — Email/password login with Zod validation, session persistence via AsyncStorage
-- **Product Listing** — Grid layout with search (debounced), category filters, pull-to-refresh, skeleton loaders
-- **Product Details** — Full product page with image, rating, quantity stepper, and add-to-cart
-- **Cart Management** — Add/remove/update items, persisted across app restarts, live cart badge
-- **Checkout Flow** — Order summary, address form, payment selection, animated success screen
-- **Profile Screen** — User info and cart stats
+A React Native e-commerce application built with Expo SDK 56, Redux Toolkit, and RTK Query. Features a clean feature-based architecture with full support for Light and Dark themes.
 
 ---
 
-## 🏗️ Tech Stack & Rationale
+## 📱 Screenshots
 
-| Concern | Choice | Why |
-|---|---|---|
-| Framework | **Expo SDK 56** (managed) + TypeScript strict | Fastest path to shareable APK via EAS; zero native config |
-| Navigation | **React Navigation v6** (Native Stack + Bottom Tabs) | De-facto RN standard, fully typed |
-| State | **Redux Toolkit + RTK Query** | Predictable, scalable, built-in caching; shows "proper" state management to evaluators |
-| Styling | **StyleSheet API + centralized theme** | No extra deps; type-safe; 4/8/16/24px spacing scale |
-| API | **DummyJSON** `https://dummyjson.com/products` | Rich data (categories, search, pagination, discounts) |
-| Persistence | **AsyncStorage** | Cart + auth token survive app restarts |
-| Forms | **React Hook Form + Zod** | Type-safe schema validation, minimal re-renders |
-| Lists | **@shopify/flash-list** | ~10× faster than FlatList for product grids |
-| Images | **expo-image** | Built-in caching, blurhash placeholder |
-| Testing | **Jest + RNTL** | Unit tests for cart reducer + price utils |
+### ☀️ Light Mode
+
+<p align="center">
+  <img src="assets/screenshots/light_1_login.jpg" width="18%" alt="Login" />
+  <img src="assets/screenshots/light_2_home.jpg" width="18%" alt="Home" />
+  <img src="assets/screenshots/light_3_filter.jpg" width="18%" alt="Filters" />
+  <img src="assets/screenshots/light_4_details.jpg" width="18%" alt="Product Details" />
+  <img src="assets/screenshots/light_5_cart.jpg" width="18%" alt="Cart" />
+</p>
+
+<p align="center">
+  <img src="assets/screenshots/light_6_checkout.jpg" width="18%" alt="Checkout" />
+  <img src="assets/screenshots/light_7_success.jpg" width="18%" alt="Order Success" />
+  <img src="assets/screenshots/light_8_profile.jpg" width="18%" alt="Profile" />
+</p>
+
+### 🌙 Dark Mode
+
+<p align="center">
+  <img src="assets/screenshots/dark_1_home.jpg" width="18%" alt="Home" />
+  <img src="assets/screenshots/dark_2_filter.jpg" width="18%" alt="Filters" />
+  <img src="assets/screenshots/dark_3_details.jpg" width="18%" alt="Product Details" />
+  <img src="assets/screenshots/dark_4_success.jpg" width="18%" alt="Order Success" />
+  <img src="assets/screenshots/dark_5_profile.jpg" width="18%" alt="Profile" />
+</p>
 
 ---
 
-## 📁 Folder Structure
+## 🛠️ Tech Stack
+
+| Category | Library |
+|---|---|
+| Framework | React Native + Expo SDK 56 |
+| State Management | Redux Toolkit |
+| Data Fetching | RTK Query (DummyJSON API) |
+| Navigation | React Navigation (Native Stack + Bottom Tabs) |
+| Forms & Validation | React Hook Form + Zod |
+| Icons | @expo/vector-icons (Feather, FontAwesome) |
+| Storage | AsyncStorage (theme + cart persistence) |
+| Testing | Jest 29 + jest-expo |
+
+---
+
+## 📁 Project Structure
 
 ```
 src/
-├── app/                    # Entry, navigation, providers
-│   ├── navigation/         # RootNavigator, AuthNavigator, MainTabNavigator
-│   └── providers/          # AppProviders (Redux, SafeArea, GestureHandler, Toast)
-├── store/                  # store.ts + rootReducer.ts
+├── app/
+│   ├── navigation/        # Tab and stack navigator definitions
+│   └── providers/         # Redux store, theme, and toast providers
+├── core/
+│   ├── constants/         # API base URL and storage keys
+│   └── theme/             # Colors, typography, spacing, and ThemeContext
 ├── features/
-│   ├── auth/               # LoginScreen, ProfileScreen, authSlice, types
-│   ├── products/           # HomeScreen, ProductDetailsScreen, ProductCard, productsApi, types
-│   └── cart/               # CartScreen, CheckoutScreen, OrderSuccessScreen, CartItem, cartSlice, selectors, types
+│   ├── auth/              # Login screen, profile screen, auth slice
+│   ├── cart/              # Cart slice, CartItem component, Checkout, Order Success
+│   └── products/          # Product list, details, filters slice, RTK Query API
 ├── shared/
-│   ├── components/         # Button, Input, Loader, SkeletonLoader, EmptyState, ErrorView
-│   ├── hooks/              # useAppDispatch, useAppSelector, useDebounce
-│   └── utils/              # formatCurrency, logger
-└── core/
-    ├── theme/              # colors.ts, typography.ts, spacing.ts
-    ├── constants/          # api.ts (base URL, AsyncStorage keys)
-    └── api/                # baseQuery.ts (RTK Query fetch config)
+│   ├── components/        # Button, Input, SkeletonLoader, TabView, ErrorView
+│   ├── hooks/             # useDebounce, useAppSelector, useAppDispatch
+│   └── utils/             # formatCurrency, calculateDiscountedPrice, logger
+└── store/                 # rootReducer and store configuration
 ```
-
-**Architecture rules enforced:**
-1. Screens only orchestrate — no business logic inline
-2. Slices hold state only — side effects via RTK Query / thunks
-3. No prop drilling beyond 2 levels — selectors/hooks instead
-4. Single source of truth — cart & auth live only in Redux
-5. All shared components typed with explicit Props interfaces
 
 ---
 
-## 🚀 Setup & Running
+## ✨ Features
+
+- **Authentication** — Simple email/password login with Zod validation
+- **Product Catalog** — Category-based swipeable tabs with a 2-column product grid
+- **Search** — Debounced live search with filtered results
+- **Sort & Filters** — Bottom sheet with sort order, price range (₹), and rating filters; active filter count badge
+- **Product Details** — Full details view with quantity stepper and Add to Cart
+- **Cart** — Item list with quantity controls, remove confirmation dialog, and real-time total
+- **Checkout** — Delivery address form with validation, payment method selection
+- **Order Success** — Animated confirmation screen with order ID
+- **Dark / Light Theme** — System-aware toggle, persisted via AsyncStorage
+- **Custom Toasts** — Floating capsule-style notifications for cart actions
+- **Currency Conversion** — Prices automatically converted from USD → INR (1 USD = 83 INR) at the API layer
+
+---
+
+## 🚀 Setup
+
+### Prerequisites
+- Node.js 18+
+- Expo CLI (`npm install -g expo-cli`)
+- Android Studio or Xcode (for device/emulator)
+
+### Installation
 
 ```bash
-# Clone
+# Clone the repository
 git clone https://github.com/Kishan89/Marketplace-App.git
 cd Marketplace-App
 
-# Install
-npm install
+# Install dependencies
+yarn install
 
-# Start dev server
+# Start the Metro bundler
 npx expo start
-
-# iOS simulator
-npx expo start --ios
-
-# Android emulator / device
-npx expo start --android
 ```
 
-**Login credentials:** Any valid email + password ≥ 6 chars (e.g., `test@test.com` / `123456`)
-
----
-
-## 🧪 Running Tests
+### Run on Device
 
 ```bash
-npm test                    # Run all tests
-npm run test:coverage       # With coverage report
-```
+# Android
+npx expo run:android
 
-Tests cover:
-- `cartSlice` reducer (add, remove, update, clear, hydrate)
-- `formatCurrency` and `calculateDiscountedPrice` utilities
+# iOS
+npx expo run:ios
+```
 
 ---
 
-## 🔨 Lint & Format
+## 🧪 Testing
+
+Unit tests cover the cart Redux slice and currency utility functions.
 
 ```bash
-npm run lint                # ESLint
-npm run format              # Prettier
+yarn test
+```
+
+**Results:** 19 tests across 2 suites — all passing.
+
+```
+PASS  __tests__/formatCurrency.test.ts
+PASS  __tests__/cartSlice.test.ts
+
+Test Suites: 2 passed, 2 total
+Tests:       19 passed, 19 total
 ```
 
 ---
 
-## 📦 Building APK
+## 📦 Assumptions & Additional Features
 
-### Prerequisites
-```bash
-npm install -g eas-cli
-eas login                   # Sign in / create Expo account
-```
-
-### Configure & Build
-```bash
-eas build:configure         # Creates eas.json if not present
-eas build -p android --profile preview
-```
-
-This generates a shareable `.apk` link on [expo.dev](https://expo.dev) dashboard (internal distribution).
+- **USD → INR Conversion:** All product prices from the DummyJSON API are converted to INR (×83) inside RTK Query's `transformResponse` before being stored in the Redux cache, ensuring consistency across filtering, cart totals, and checkout.
+- **Filter Performance:** Applied filters are stored in a dedicated Redux `filterSlice`. The tab view `renderScene` callback is stable (no filter props), so switching filters never unmounts or remounts category scenes.
+- **Cart Persistence:** Cart state is saved to AsyncStorage on every change using a Redux store subscriber, and rehydrated on app start.
+- **Theme Persistence:** Selected theme is saved synchronously to local state and asynchronously to AsyncStorage to avoid transition lag.
+- **Mock Checkout:** Order placement simulates a 1.5 s network delay before navigating to the success screen.
 
 ---
 
-## 🎯 Assumptions & Trade-offs
+## 📎 Links
 
-- **Dummy auth:** Any valid email/password combo logs in. No real backend.
-- **DummyJSON:** Chosen over FakeStoreAPI for richer data (pagination, search, categories, discounts).
-- **No redux-persist:** Used a subscribe listener + AsyncStorage directly to avoid the redux-persist bundle overhead.
-- **No dark mode:** Deferred as stretch goal to keep the 48h scope manageable.
-- **FlashList:** Used instead of FlatList for the product grid — ~60% better performance on large lists.
-
----
-
-## ✨ Bonus Features
-
-- ✅ Category filter chips on Home screen
-- ✅ Animated shimmer skeleton loaders
-- ✅ Cart badge with live item count on tab bar
-- ✅ Discount badges and crossed-out original price on every product
-- ✅ Order success screen with spring animation
-- ✅ "Already N in cart" hint on product details
-- ✅ Free delivery threshold (orders > $50 ship free)
-
----
-
-## 📋 Git Commits
-
-```
-chore: initial project scaffold
-feat: navigation structure
-feat: dummy authentication flow
-feat: home screen with product listing
-feat: product details screen
-feat: cart management
-feat: dummy checkout flow
-polish: error handling, accessibility, edge cases
-test: cart logic unit tests
-docs: add README and setup guide
-```
+| | |
+|---|---|
+| 📂 GitHub Repository | https://github.com/Kishan89/Marketplace-App |
+| 📦 APK Download | [Google Drive](https://drive.google.com/file/d/1UDgyofpIESEFHjTTCMUURIKNgc8XEDs9/view?usp=drive_link) |
+| 🎥 Demo Video | [Google Drive](https://drive.google.com/file/d/1wmCiRpn0CO9CiiP-xwvEHetxuD4IwUmG/view?usp=sharing) |

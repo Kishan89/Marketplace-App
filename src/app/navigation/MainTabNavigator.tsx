@@ -1,15 +1,16 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, Platform } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { HomeScreen } from '../../features/products/screens/HomeScreen';
 import { ProductDetailsScreen } from '../../features/products/screens/ProductDetailsScreen';
 import { CartScreen } from '../../features/cart/screens/CartScreen';
 import { CheckoutScreen } from '../../features/cart/screens/CheckoutScreen';
 import { OrderSuccessScreen } from '../../features/cart/screens/OrderSuccessScreen';
 import { ProfileScreen } from '../../features/auth/screens/ProfileScreen';
-import { Colors } from '../../core/theme/colors';
+import { useTheme } from '../../core/theme/ThemeContext';
+import { typography } from '../../core/theme/typography';
 import { useAppSelector } from '../../shared/hooks/useAppSelector';
 import { selectCartItemCount } from '../../features/cart/selectors';
 
@@ -52,12 +53,13 @@ const CartStackNavigator: React.FC = () => (
 );
 
 const CartTabIcon: React.FC<{ color: string; size: number }> = ({ color, size }) => {
+  const { colors } = useTheme();
   const count = useAppSelector(selectCartItemCount);
   return (
     <View>
-      <Ionicons name="cart-outline" size={size} color={color} />
+      <Feather name="shopping-cart" size={size} color={color} />
       {count > 0 ? (
-        <View style={styles.badge}>
+        <View style={[styles.badge, { backgroundColor: colors.discount }]}>
           <Text style={styles.badgeText}>{count > 99 ? '99+' : count}</Text>
         </View>
       ) : null}
@@ -65,59 +67,66 @@ const CartTabIcon: React.FC<{ color: string; size: number }> = ({ color, size })
   );
 };
 
-export const MainTabNavigator: React.FC = () => (
-  <Tab.Navigator
-    screenOptions={{
-      headerShown: false,
-      tabBarActiveTintColor: Colors.tabActive,
-      tabBarInactiveTintColor: Colors.tabInactive,
-      tabBarStyle: {
-        backgroundColor: Colors.tabBackground,
-        borderTopWidth: 1,
-        borderTopColor: Colors.border,
-        height: 60,
-        paddingBottom: 8,
-      },
-      tabBarLabelStyle: { fontSize: 11, fontWeight: '500' },
-    }}
-  >
-    <Tab.Screen
-      name="HomeTab"
-      component={HomeStackNavigator}
-      options={{
-        tabBarLabel: 'Home',
-        tabBarIcon: ({ color, size }) => (
-          <Ionicons name="home-outline" size={size} color={color} />
-        ),
+export const MainTabNavigator: React.FC = () => {
+  const { colors } = useTheme();
+
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textTertiary,
+        tabBarStyle: {
+          backgroundColor: colors.surface,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+          height: Platform.OS === 'ios' ? 90 : 70,       // Lifted height for bottom spacing
+          paddingBottom: Platform.OS === 'ios' ? 28 : 14,  // Comfortable spacing under tab icons
+          paddingTop: 10,
+        },
+        tabBarLabelStyle: {
+          fontFamily: typography.fontFamily.medium,
+          fontSize: typography.caption.fontSize,
+        },
       }}
-    />
-    <Tab.Screen
-      name="CartTab"
-      component={CartStackNavigator}
-      options={{
-        tabBarLabel: 'Cart',
-        tabBarIcon: ({ color, size }) => <CartTabIcon color={color} size={size} />,
-      }}
-    />
-    <Tab.Screen
-      name="ProfileTab"
-      component={ProfileScreen}
-      options={{
-        tabBarLabel: 'Profile',
-        tabBarIcon: ({ color, size }) => (
-          <Ionicons name="person-outline" size={size} color={color} />
-        ),
-      }}
-    />
-  </Tab.Navigator>
-);
+    >
+      <Tab.Screen
+        name="HomeTab"
+        component={HomeStackNavigator}
+        options={{
+          tabBarLabel: 'Home',
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="home" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="CartTab"
+        component={CartStackNavigator}
+        options={{
+          tabBarLabel: 'Cart',
+          tabBarIcon: ({ color, size }) => <CartTabIcon color={color} size={size} />,
+        }}
+      />
+      <Tab.Screen
+        name="ProfileTab"
+        component={ProfileScreen}
+        options={{
+          tabBarLabel: 'Profile',
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="user" size={size} color={color} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
 
 const styles = StyleSheet.create({
   badge: {
     position: 'absolute',
-    right: -6,
+    right: -8,
     top: -4,
-    backgroundColor: Colors.badge,
     borderRadius: 8,
     minWidth: 16,
     height: 16,
@@ -126,8 +135,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 3,
   },
   badgeText: {
-    color: Colors.white,
+    color: '#FFFFFF',
+    fontFamily: typography.fontFamily.bold,
     fontSize: 9,
-    fontWeight: '700',
   },
 });

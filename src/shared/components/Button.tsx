@@ -6,12 +6,15 @@ import {
   StyleSheet,
   ViewStyle,
   TextStyle,
+  Platform,
+  TouchableNativeFeedback,
+  View,
 } from 'react-native';
-import { Colors } from '../../core/theme/colors';
-import { Typography } from '../../core/theme/typography';
-import { Spacing } from '../../core/theme/spacing';
+import { useTheme } from '../../core/theme/ThemeContext';
+import { typography } from '../../core/theme/typography';
+import { spacing, radius } from '../../core/theme/spacing';
 
-type Variant = 'primary' | 'outline' | 'ghost';
+type Variant = 'primary' | 'outline' | 'ghost' | 'danger';
 
 interface ButtonProps {
   label: string;
@@ -34,7 +37,81 @@ export const Button: React.FC<ButtonProps> = ({
   textStyle,
   fullWidth = false,
 }) => {
+  const { colors } = useTheme();
   const isDisabled = disabled || isLoading;
+
+  // Dynamic Styles based on Active Theme
+  const variantStyles = {
+    primary: {
+      backgroundColor: colors.primary,
+    },
+    outline: {
+      backgroundColor: 'transparent',
+      borderWidth: 1.5,
+      borderColor: colors.primary,
+    },
+    ghost: {
+      backgroundColor: 'transparent',
+    },
+    danger: {
+      backgroundColor: colors.error,
+    },
+  };
+
+  const labelStyles = {
+    primary: {
+      color: colors.white,
+    },
+    outline: {
+      color: colors.primary,
+    },
+    ghost: {
+      color: colors.primary,
+    },
+    danger: {
+      color: colors.white,
+    },
+  };
+
+  const buttonStyle = [
+    styles.base,
+    variantStyles[variant],
+    isDisabled && styles.disabled,
+    fullWidth && styles.fullWidth,
+    style,
+  ];
+
+  const content = (
+    <View style={styles.contentWrap}>
+      {isLoading ? (
+        <ActivityIndicator
+          color={variant === 'primary' || variant === 'danger' ? colors.white : colors.primary}
+          size="small"
+        />
+      ) : (
+        <Text style={[styles.label, labelStyles[variant], textStyle]}>{label}</Text>
+      )}
+    </View>
+  );
+
+  if (Platform.OS === 'android') {
+    return (
+      <View style={[styles.androidWrapper, fullWidth && styles.fullWidth, { borderRadius: radius.md }, style]}>
+        <TouchableNativeFeedback
+          onPress={onPress}
+          disabled={isDisabled}
+          background={TouchableNativeFeedback.Ripple(
+            variant === 'primary' || variant === 'danger' ? 'rgba(255,255,255,0.2)' : 'rgba(42,107,255,0.1)',
+            false
+          )}
+        >
+          <View style={[styles.base, variantStyles[variant], isDisabled && styles.disabled, fullWidth && styles.fullWidth]}>
+            {content}
+          </View>
+        </TouchableNativeFeedback>
+      </View>
+    );
+  }
 
   return (
     <TouchableOpacity
@@ -43,66 +120,38 @@ export const Button: React.FC<ButtonProps> = ({
       accessibilityState={{ disabled: isDisabled, busy: isLoading }}
       onPress={onPress}
       disabled={isDisabled}
-      activeOpacity={0.75}
-      style={[
-        styles.base,
-        styles[variant],
-        isDisabled && styles.disabled,
-        fullWidth && styles.fullWidth,
-        style,
-      ]}
+      activeOpacity={0.8}
+      style={buttonStyle}
     >
-      {isLoading ? (
-        <ActivityIndicator
-          color={variant === 'primary' ? Colors.white : Colors.primary}
-          size="small"
-        />
-      ) : (
-        <Text style={[styles.label, styles[`${variant}Label`], textStyle]}>{label}</Text>
-      )}
+      {content}
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
+  androidWrapper: {
+    overflow: 'hidden',
+  },
   base: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    minHeight: 52,
+    borderRadius: radius.md,
+    minHeight: 48,
   },
   fullWidth: {
     width: '100%',
   },
-  // Variants
-  primary: {
-    backgroundColor: Colors.primary,
-  },
-  outline: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-  },
   disabled: {
-    opacity: 0.45,
+    opacity: 0.5,
   },
-  // Labels
+  contentWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   label: {
-    ...Typography.button,
-  },
-  primaryLabel: {
-    color: Colors.white,
-  },
-  outlineLabel: {
-    color: Colors.primary,
-  },
-  ghostLabel: {
-    color: Colors.primary,
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: typography.bodyLarge.fontSize,
   },
 });

@@ -11,7 +11,7 @@ const DUMMY_USER: User = {
   email: 'test@marketplace.com',
   firstName: 'Kishan',
   lastName: 'Dev',
-  image: 'https://dummyjson.com/icon/emilys/128',
+  image: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80',
 };
 
 const DUMMY_TOKEN = 'marketplace-dummy-token-2024';
@@ -56,6 +56,7 @@ const initialState: AuthState = {
   token: null,
   user: null,
   isLoading: false,
+  isRestoring: true,
   error: null,
 };
 
@@ -84,11 +85,18 @@ const authSlice = createSlice({
     });
 
     // Restore session
+    builder.addCase(restoreSessionThunk.pending, state => {
+      state.isRestoring = true;
+    });
     builder.addCase(restoreSessionThunk.fulfilled, (state, action) => {
+      state.isRestoring = false;
       if (action.payload) {
         state.token = action.payload.token;
         state.user = action.payload.user;
       }
+    });
+    builder.addCase(restoreSessionThunk.rejected, state => {
+      state.isRestoring = false;
     });
 
     // Logout

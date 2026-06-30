@@ -1,5 +1,5 @@
 export const API_BASE_URL = 'https://dummyjson.com';
-export const PRODUCTS_LIMIT = 20;
+export const PRODUCTS_LIMIT = 60;
 
 export const ASYNC_STORAGE_KEYS = {
   AUTH_TOKEN: '@marketplace/auth_token',

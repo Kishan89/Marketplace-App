@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Colors } from '../../core/theme/colors';
-import { Typography } from '../../core/theme/typography';
-import { Spacing } from '../../core/theme/spacing';
+import { useTheme } from '../../core/theme/ThemeContext';
+import { typography } from '../../core/theme/typography';
+import { spacing } from '../../core/theme/spacing';
 import { Button } from './Button';
 
 interface EmptyStateProps {
@@ -19,43 +19,51 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   message,
   actionLabel,
   onAction,
-}) => (
-  <View style={styles.container} accessibilityRole="text">
-    <Text style={styles.icon}>{icon}</Text>
-    <Text style={styles.title}>{title}</Text>
-    {message ? <Text style={styles.message}>{message}</Text> : null}
-    {actionLabel && onAction ? (
-      <Button label={actionLabel} onPress={onAction} style={styles.button} />
-    ) : null}
-  </View>
-);
+}) => {
+  const { colors } = useTheme();
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]} accessibilityRole="text">
+      <Text style={styles.icon}>{icon}</Text>
+      <Text style={[styles.title, { color: colors.textPrimary, fontFamily: typography.fontFamily.bold }]}>
+        {title}
+      </Text>
+      {message ? (
+        <Text style={[styles.message, { color: colors.textSecondary, fontFamily: typography.fontFamily.regular }]}>
+          {message}
+        </Text>
+      ) : null}
+      {actionLabel && onAction ? (
+        <Button label={actionLabel} onPress={onAction} style={styles.button} />
+      ) : null}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.huge,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.xxxl,
   },
   icon: {
-    fontSize: 64,
-    marginBottom: Spacing.base,
+    fontSize: 56,
+    marginBottom: spacing.md,
   },
   title: {
-    ...Typography.h3,
-    color: Colors.textPrimary,
+    fontSize: typography.h3.fontSize,
     textAlign: 'center',
-    marginBottom: Spacing.sm,
+    marginBottom: spacing.xs,
   },
   message: {
-    ...Typography.body1,
-    color: Colors.textSecondary,
+    fontSize: typography.body.fontSize,
     textAlign: 'center',
-    marginBottom: Spacing.lg,
+    marginBottom: spacing.xl,
+    maxWidth: 280,
   },
   button: {
-    marginTop: Spacing.sm,
-    paddingHorizontal: Spacing.xl,
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.xl,
   },
 });

@@ -1,26 +1,26 @@
-import { formatCurrency, calculateDiscountedPrice } from '../../src/shared/utils/formatCurrency';
+import { formatCurrency, calculateDiscountedPrice } from '../src/shared/utils/formatCurrency';
 
 describe('formatCurrency', () => {
   it('formats a round number correctly', () => {
-    expect(formatCurrency(100)).toBe('$100.00');
+    expect(formatCurrency(100)).toBe('₹100.00');
   });
 
   it('formats to 2 decimal places', () => {
-    expect(formatCurrency(19.9)).toBe('$19.90');
-    expect(formatCurrency(19.99)).toBe('$19.99');
+    expect(formatCurrency(19.9)).toBe('₹19.90');
+    expect(formatCurrency(19.99)).toBe('₹19.99');
   });
 
   it('handles zero', () => {
-    expect(formatCurrency(0)).toBe('$0.00');
+    expect(formatCurrency(0)).toBe('₹0.00');
   });
 
   it('handles large numbers', () => {
-    expect(formatCurrency(1999.99)).toBe('$1,999.99');
+    expect(formatCurrency(1999.99)).toBe('₹1,999.99');
   });
 
-  it('returns $0.00 for non-finite values', () => {
-    expect(formatCurrency(Infinity)).toBe('$0.00');
-    expect(formatCurrency(NaN)).toBe('$0.00');
+  it('returns ₹0.00 for non-finite values', () => {
+    expect(formatCurrency(Infinity)).toBe('₹0.00');
+    expect(formatCurrency(NaN)).toBe('₹0.00');
   });
 });
 

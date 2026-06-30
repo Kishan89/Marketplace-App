@@ -2,9 +2,10 @@ import React, { memo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { Product } from '../types';
-import { Colors } from '../../../core/theme/colors';
-import { Typography } from '../../../core/theme/typography';
-import { Spacing } from '../../../core/theme/spacing';
+import { useTheme } from '../../../core/theme/ThemeContext';
+import { colors } from '../../../core/theme/colors';
+import { typography } from '../../../core/theme/typography';
+import { spacing, radius } from '../../../core/theme/spacing';
 import { formatCurrency, calculateDiscountedPrice } from '../../../shared/utils/formatCurrency';
 
 interface ProductCardProps {
@@ -13,12 +14,13 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onPress }) => {
+  const { colors } = useTheme();
   const discountedPrice = calculateDiscountedPrice(product.price, product.discountPercentage);
   const hasDiscount = product.discountPercentage > 0;
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
       onPress={() => onPress(product)}
       activeOpacity={0.88}
       accessibilityRole="button"
@@ -27,36 +29,36 @@ export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onPress 
       {/* Image */}
       <Image
         source={{ uri: product.thumbnail }}
-        style={styles.image}
+        style={[styles.image, { backgroundColor: colors.skeletonBase }]}
         contentFit="cover"
         transition={200}
       />
 
       {/* Discount badge */}
       {hasDiscount ? (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>-{Math.round(product.discountPercentage)}%</Text>
+        <View style={[styles.badge, { backgroundColor: colors.discount }]}>
+          <Text style={[styles.badgeText, { color: colors.white }]}>-{Math.round(product.discountPercentage)}%</Text>
         </View>
       ) : null}
 
       {/* Info */}
       <View style={styles.info}>
-        <Text style={styles.category}>{product.category}</Text>
-        <Text style={styles.title} numberOfLines={2}>
+        <Text style={[styles.category, { color: colors.textTertiary }]}>{product.category}</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={2}>
           {product.title}
         </Text>
 
         {/* Rating */}
         <View style={styles.ratingRow}>
           <Text style={styles.star}>⭐</Text>
-          <Text style={styles.rating}>{product.rating.toFixed(1)}</Text>
+          <Text style={[styles.rating, { color: colors.textSecondary }]}>{product.rating.toFixed(1)}</Text>
         </View>
 
         {/* Price */}
         <View style={styles.priceRow}>
-          <Text style={styles.price}>{formatCurrency(discountedPrice)}</Text>
+          <Text style={[styles.price, { color: colors.primary }]}>{formatCurrency(discountedPrice)}</Text>
           {hasDiscount ? (
-            <Text style={styles.originalPrice}>{formatCurrency(product.price)}</Text>
+            <Text style={[styles.originalPrice, { color: colors.textTertiary }]}>{formatCurrency(product.price)}</Text>
           ) : null}
         </View>
       </View>
@@ -69,57 +71,75 @@ ProductCard.displayName = 'ProductCard';
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    margin: 6,
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
+    margin: 6, // Adjusted for exact equal spacing
+    maxWidth: '48.5%', // Prevents the last item in an odd row from stretching
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
     overflow: 'hidden',
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   image: {
     width: '100%',
     height: 150,
-    backgroundColor: Colors.skeletonBase,
+    backgroundColor: colors.skeletonBase,
   },
   badge: {
     position: 'absolute',
-    top: 8,
-    left: 8,
-    backgroundColor: Colors.error,
-    borderRadius: 6,
-    paddingHorizontal: 6,
+    top: spacing.sm,
+    left: spacing.sm,
+    backgroundColor: colors.discount,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 2,
   },
   badgeText: {
-    ...Typography.caption,
-    color: Colors.white,
-    fontWeight: '700',
+    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.caption.fontSize,
+    color: colors.white,
   },
-  info: { padding: Spacing.sm },
+  info: { padding: spacing.sm },
   category: {
-    ...Typography.caption,
-    color: Colors.textDisabled,
+    fontFamily: typography.fontFamily.medium,
+    fontSize: typography.caption.fontSize,
+    color: colors.textTertiary,
     textTransform: 'capitalize',
     marginBottom: 2,
   },
   title: {
-    ...Typography.body2,
-    color: Colors.textPrimary,
-    fontWeight: '600',
-    marginBottom: Spacing.xs,
-    minHeight: 34,
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: typography.body.fontSize,
+    lineHeight: typography.body.lineHeight,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
+    minHeight: 40,
   },
-  ratingRow: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.xs },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
   star: { fontSize: 11 },
-  rating: { ...Typography.caption, color: Colors.textSecondary, marginLeft: 3 },
-  priceRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  price: { ...Typography.price, color: Colors.primary },
+  rating: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.caption.fontSize,
+    color: colors.textSecondary,
+    marginLeft: 3,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: spacing.xs,
+  },
+  price: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.price.fontSize,
+    color: colors.primary,
+  },
   originalPrice: {
-    ...Typography.caption,
-    color: Colors.textDisabled,
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.caption.fontSize,
+    color: colors.textTertiary,
     textDecorationLine: 'line-through',
   },
 });

@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useState } from 'react';
 import {
   View,
   TextInput,
@@ -7,9 +7,9 @@ import {
   TextInputProps,
   ViewStyle,
 } from 'react-native';
-import { Colors } from '../../core/theme/colors';
-import { Typography } from '../../core/theme/typography';
-import { Spacing } from '../../core/theme/spacing';
+import { useTheme } from '../../core/theme/ThemeContext';
+import { typography } from '../../core/theme/typography';
+import { spacing, radius } from '../../core/theme/spacing';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -19,19 +19,37 @@ interface InputProps extends TextInputProps {
 
 export const Input = forwardRef<TextInput, InputProps>(
   ({ label, error, containerStyle, style, ...rest }, ref) => {
+    const { colors } = useTheme();
+    const [isFocused, setIsFocused] = useState(false);
+
     return (
       <View style={[styles.container, containerStyle]}>
-        {label ? <Text style={styles.label}>{label}</Text> : null}
+        {label ? (
+          <Text style={[styles.label, { color: colors.textSecondary, fontFamily: typography.fontFamily.medium }]}>
+            {label}
+          </Text>
+        ) : null}
         <TextInput
           ref={ref}
-          style={[styles.input, error ? styles.inputError : null, style]}
-          placeholderTextColor={Colors.textDisabled}
+          style={[
+            styles.input,
+            {
+              backgroundColor: colors.background,
+              borderColor: error ? colors.error : isFocused ? colors.primary : colors.border,
+              color: colors.textPrimary,
+              fontFamily: typography.fontFamily.regular,
+            },
+            style,
+          ]}
+          placeholderTextColor={colors.textTertiary}
           accessibilityLabel={label}
           accessibilityHint={error}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           {...rest}
         />
         {error ? (
-          <Text style={styles.errorText} accessibilityRole="alert">
+          <Text style={[styles.errorText, { color: colors.error }]} accessibilityRole="alert">
             {error}
           </Text>
         ) : null}
@@ -44,31 +62,23 @@ Input.displayName = 'Input';
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: Spacing.base,
+    marginBottom: spacing.lg,
   },
   label: {
-    ...Typography.body2,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.xs,
-    fontWeight: '500',
+    fontSize: typography.body.fontSize,
+    marginBottom: spacing.xs,
   },
   input: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.md,
-    ...Typography.body1,
-    color: Colors.textPrimary,
-    minHeight: 52,
-  },
-  inputError: {
-    borderColor: Colors.error,
+    borderWidth: 1,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    fontSize: typography.bodyLarge.fontSize,
+    minHeight: 48,
   },
   errorText: {
-    ...Typography.caption,
-    color: Colors.error,
-    marginTop: Spacing.xs,
+    fontSize: typography.caption.fontSize,
+    fontFamily: typography.fontFamily.regular,
+    marginTop: spacing.xs,
   },
 });

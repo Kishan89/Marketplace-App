@@ -1,39 +1,32 @@
-import { TextStyle } from 'react-native';
-
-export const FontSize = {
-  xs: 11,
-  sm: 13,
-  base: 15,
-  md: 17,
-  lg: 20,
-  xl: 24,
-  xxl: 28,
-  xxxl: 34,
-} as const;
-
-export const FontWeight: Record<string, TextStyle['fontWeight']> = {
-  regular: '400',
-  medium: '500',
-  semiBold: '600',
-  bold: '700',
-  extraBold: '800',
+export const typography = {
+  fontFamily: {
+    regular: 'Figtree_400Regular',
+    medium: 'Figtree_500Medium',
+    semibold: 'Figtree_600SemiBold',
+    bold: 'Figtree_700Bold',
+    extrabold: 'Figtree_800ExtraBold',
+  },
+  // Type scale
+  display:   { fontSize: 32, lineHeight: 40, fontFamily: 'Figtree_800ExtraBold' },
+  h1:        { fontSize: 26, lineHeight: 34, fontFamily: 'Figtree_700Bold' },
+  h2:        { fontSize: 20, lineHeight: 28, fontFamily: 'Figtree_700Bold' },
+  h3:        { fontSize: 17, lineHeight: 24, fontFamily: 'Figtree_600SemiBold' },
+  bodyLarge: { fontSize: 16, lineHeight: 24, fontFamily: 'Figtree_400Regular' },
+  body:      { fontSize: 14, lineHeight: 20, fontFamily: 'Figtree_400Regular' },
+  label:     { fontSize: 13, lineHeight: 18, fontFamily: 'Figtree_500Medium' },
+  caption:   { fontSize: 12, lineHeight: 16, fontFamily: 'Figtree_400Regular' },
+  price:     { fontSize: 18, lineHeight: 24, fontFamily: 'Figtree_700Bold' },
 };
 
-export const LineHeight = {
-  tight: 18,
-  normal: 22,
-  relaxed: 26,
-  loose: 32,
-} as const;
-
+// Backward compatibility helper mapping old keys to new tokens
 export const Typography = {
-  h1: { fontSize: FontSize.xxxl, fontWeight: FontWeight.bold, lineHeight: LineHeight.loose },
-  h2: { fontSize: FontSize.xxl, fontWeight: FontWeight.bold, lineHeight: LineHeight.relaxed },
-  h3: { fontSize: FontSize.xl, fontWeight: FontWeight.semiBold, lineHeight: LineHeight.relaxed },
-  h4: { fontSize: FontSize.lg, fontWeight: FontWeight.semiBold, lineHeight: LineHeight.normal },
-  body1: { fontSize: FontSize.base, fontWeight: FontWeight.regular, lineHeight: LineHeight.normal },
-  body2: { fontSize: FontSize.sm, fontWeight: FontWeight.regular, lineHeight: LineHeight.normal },
-  caption: { fontSize: FontSize.xs, fontWeight: FontWeight.regular, lineHeight: LineHeight.tight },
-  button: { fontSize: FontSize.base, fontWeight: FontWeight.semiBold },
-  price: { fontSize: FontSize.md, fontWeight: FontWeight.bold },
+  h1: typography.h1,
+  h2: typography.h2,
+  h3: typography.h3,
+  h4: typography.h3, // Map old h4 to h3
+  body1: typography.bodyLarge,
+  body2: typography.body,
+  caption: typography.caption,
+  price: typography.price,
+  button: { fontSize: 16, fontFamily: 'Figtree_600SemiBold' },
 } as const;

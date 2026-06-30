@@ -6,8 +6,12 @@ import { MainTabNavigator } from './MainTabNavigator';
 import { Loader } from '../../shared/components/Loader';
 
 export const RootNavigator: React.FC = () => {
-  const { token } = useAppSelector(state => state.auth);
+  const { token, isRestoring } = useAppSelector(state => state.auth);
   const isAuthenticated = !!token;
+
+  if (isRestoring) {
+    return <Loader message="Restoring session..." />;
+  }
 
   return (
     <NavigationContainer>
